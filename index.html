@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#080706">
+<title>朱元璋的一生 · 像素史诗</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="viewport">
+  <div id="stage" aria-label="朱元璋的一生，像素风 H5 游戏">
+    <canvas id="game" width="640" height="360"></canvas>
+    <div class="scene-tint" id="sceneTint"></div>
+    <div class="crt"></div>
+    <div class="vignette"></div>
+
+    <!-- ===== 常驻 HUD ===== -->
+    <header class="hud hidden" id="hud">
+      <div class="hud-left">
+        <div class="seal-small">朱</div>
+        <div class="hud-place">
+          <div class="hud-chapter" id="chapterLabel">第一章</div>
+          <div class="hud-scene" id="placeLabel">钟离 · 孤庄村</div>
+        </div>
+      </div>
+      <div class="objective" id="objectiveBox">
+        <span class="objective-tag">任务</span>
+        <span id="objectiveText">看看四周</span>
+      </div>
+      <div class="hud-right">
+        <div class="stat">
+          <span class="stat-name">民心</span>
+          <div class="pips" id="minxinPips"></div>
+        </div>
+        <div class="stat">
+          <span class="stat-name">威望</span>
+          <div class="pips" id="weiwangPips"></div>
+        </div>
+      </div>
+    </header>
+
+    <button id="muteBtn" class="mute-btn" title="开关声音" aria-label="开关声音">音</button>
+
+    <!-- ===== 标题 ===== -->
+    <section class="title-screen" id="titleScreen">
+      <div class="title-edge top-left"><span>洪武</span><i></i></div>
+      <div class="title-meta">PIXEL SAGA&nbsp;&nbsp;·&nbsp;&nbsp;1344 — 1398</div>
+      <div class="title-lockup">
+        <div class="title-kicker"><span></span>布 衣 天 子<span></span></div>
+        <h1 class="game-title"><span>朱元璋</span><em>的一生</em></h1>
+        <div class="title-en">THE LIFE OF ZHU YUANZHANG</div>
+        <p class="title-tagline">从放牛娃，到开国皇帝</p>
+      </div>
+      <nav class="title-menu" id="titleMenu" aria-label="主菜单">
+        <button class="menu-item selected" data-action="new"><span class="menu-key">壹</span><span class="menu-label">新的征程</span><small>NEW LIFE</small></button>
+        <button class="menu-item" data-action="continue"><span class="menu-key">贰</span><span class="menu-label">续写旧梦</span><small>CONTINUE</small></button>
+        <button class="menu-item" data-action="help"><span class="menu-key">叁</span><span class="menu-label">操作说明</span><small>HOW TO PLAY</small></button>
+      </nav>
+      <div class="title-footer">
+        <span><kbd>↑</kbd><kbd>↓</kbd> 选择</span><span><kbd>ENTER</kbd> 确认</span>
+        <span class="title-note">本作改编自明太祖生平 · 部分情节为游戏化演绎</span>
+      </div>
+      <div class="title-version">V 1.0 · 应天造办处</div>
+    </section>
+
+    <!-- ===== 章节卡 ===== -->
+    <section class="chapter-card hidden" id="chapterCard">
+      <div class="cc-rule"></div>
+      <div class="cc-seal" id="ccSeal">壹</div>
+      <div class="cc-kicker" id="ccKicker">第一章</div>
+      <h2 id="ccTitle">钟离孤庄</h2>
+      <p id="ccSub">元至正四年 · 淮西大旱</p>
+      <div class="cc-rule bottom"></div>
+    </section>
+
+    <!-- ===== 对话 ===== -->
+    <section class="dialogue panel hidden" id="dialogueBox">
+      <div class="portrait-frame">
+        <canvas id="portrait" width="64" height="64"></canvas>
+        <div class="portrait-scan"></div>
+      </div>
+      <div class="dialogue-content">
+        <div class="speaker-row">
+          <span class="speaker-name" id="speakerName">朱元璋</span>
+          <span class="speaker-title" id="speakerTitle"></span>
+        </div>
+        <p class="dialogue-text" id="dialogueText"></p>
+        <div class="continue-hint"><span class="keycap">空格</span><span>继续</span><i></i></div>
+      </div>
+    </section>
+
+    <!-- ===== 抉择 ===== -->
+    <section class="choice panel hidden" id="choiceBox">
+      <div class="choice-head"><span>抉择</span><small>↑ ↓ 选择 · ENTER 确认</small></div>
+      <p class="choice-prompt" id="choicePrompt"></p>
+      <div class="choice-list" id="choiceList"></div>
+    </section>
+
+    <!-- ===== 点将出征 ===== -->
+    <section class="overlay-screen deploy-screen hidden" id="deployScreen">
+      <div class="deploy-top">
+        <div class="deploy-kicker" id="deployKicker">战 前 谋 划</div>
+        <h2>点 将 出 征</h2>
+        <p id="deploySub">选择一条破敌之策</p>
+      </div>
+      <div class="army-line">
+        <div><span>我军</span><strong id="allyCount">十二营</strong></div>
+        <div class="army-vs">VS</div>
+        <div><span>敌军</span><strong id="enemyCount">数万众</strong></div>
+      </div>
+      <div class="plan-cards" id="planCards"></div>
+      <div class="deploy-foot">
+        <span><kbd>←</kbd><kbd>→</kbd> 选择计策</span>
+        <button class="pixel-btn" id="deployConfirm">击 鼓 出 征</button>
+      </div>
+    </section>
+
+    <!-- ===== 战斗 HUD ===== -->
+    <div class="battle-hud hidden" id="battleHud">
+      <div class="bh-left">
+        <div class="bh-name"><span>朱元璋</span><small>主帅</small></div>
+        <div class="hp-wrap"><div class="hp-fill" id="hpFill"></div><span id="hpText">100 / 100</span></div>
+      </div>
+      <div class="bh-center">
+        <div class="bh-objective" id="battleObjective">摧毁敌军三面帅旗</div>
+        <div class="banner-pips" id="bannerPips"></div>
+      </div>
+      <div class="bh-right">
+        <div class="special-box" id="specialBox">
+          <span class="special-name" id="specialName">战吼</span>
+          <span class="special-state" id="specialState">就绪</span>
+          <div class="special-cd"><i id="specialFill"></i></div>
+        </div>
+        <div class="troop-count" id="troopText">部曲 10</div>
+      </div>
+    </div>
+
+    <!-- ===== 战斗横幅 ===== -->
+    <div class="battle-banner hidden" id="battleBanner"><span>大 捷</span><small>VICTORY</small></div>
+
+    <!-- ===== 失败 ===== -->
+    <section class="overlay-screen defeat-screen hidden" id="defeatScreen">
+      <div class="defeat-inner">
+        <div class="defeat-seal">败</div>
+        <h2>兵败如山</h2>
+        <p>乱军之中，你退回了营帐。天下大势，尚需再战。</p>
+        <div class="defeat-actions">
+          <button class="pixel-btn" id="retryBtn">整 军 再 战</button>
+          <button class="pixel-btn ghost" id="backTitleBtn">回 到 标 题</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 结局 ===== -->
+    <section class="overlay-screen ending-screen hidden" id="endingScreen">
+      <div class="ending-inner">
+        <div class="ending-kicker" id="endingKicker">洪武三十一年 · 公元 1398 年</div>
+        <div class="ending-seal" id="endingSeal">明</div>
+        <h2 id="endingTitle">布衣天子</h2>
+        <p class="ending-desc" id="endingDesc"></p>
+        <div class="ending-stats" id="endingStats"></div>
+        <div class="ending-timeline" id="endingTimeline"></div>
+        <p class="ending-quote" id="endingQuote"></p>
+        <button class="pixel-btn" id="restartBtn">再 活 一 世</button>
+      </div>
+    </section>
+
+    <!-- ===== 说明 ===== -->
+    <section class="modal hidden" id="helpModal">
+      <div class="modal-inner panel">
+        <div class="modal-head"><span>操作说明</span><button id="helpClose" aria-label="关闭">×</button></div>
+        <div class="help-grid">
+          <div class="help-key"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></div>
+          <div><b>行走 / 选择</b><span>在村落与军营中自由走动，靠近人物或物件后按空格。</span></div>
+          <div class="help-key"><kbd>SPACE</kbd></div>
+          <div><b>交谈 / 调查</b><span>推进对话、拾取物品。战斗中则释放主帅绝技。</span></div>
+          <div class="help-key"><kbd>ENTER</kbd></div>
+          <div><b>确认</b><span>确认菜单与出征计策。</span></div>
+        </div>
+        <div class="help-tip">小提示：先与人交谈，再看看任务栏。打不过时，可以换一条计策再战。</div>
+      </div>
+    </section>
+
+    <section class="cinematic hidden" id="cinematic">
+      <div class="cinematic-rule"></div>
+      <div class="cinematic-lines" id="cinematicLines"></div>
+      <div class="cinematic-rule bottom"></div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+    <div class="fade" id="fade"></div>
+    <div class="flash" id="flash"></div>
+
+    <!-- ===== 触屏 ===== -->
+    <div class="touch-controls hidden" id="touchControls">
+      <div class="dpad">
+        <button data-key="ArrowUp" class="d-up" aria-label="上">▲</button>
+        <button data-key="ArrowLeft" class="d-left" aria-label="左">◀</button>
+        <button data-key="ArrowDown" class="d-down" aria-label="下">▼</button>
+        <button data-key="ArrowRight" class="d-right" aria-label="右">▶</button>
+      </div>
+      <button class="touch-action" data-key="Space" aria-label="交谈或绝技"><span>A</span><small>交谈 / 技</small></button>
+    </div>
+
+  </div>
+  <div class="rotate-overlay" id="rotateOverlay">
+    <div class="rotate-mark">↻</div>
+    <h3>请横屏游玩</h3>
+    <p>转动手机，沙场更开阔</p>
+    <button id="rotateDismiss">仍然竖屏进入</button>
+  </div>
+</div>
+<script src="art.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+<script src="battle.js"></script>
+</body>
+</html>
